@@ -29,12 +29,11 @@ message("*** Platform: ${PLATFORM}")
 
 # dependencies
 find_package(coco CONFIG)
+find_package(coco-devboards CONFIG)
 find_package(coco-loop CONFIG)
 find_package(coco-buffer CONFIG)
 find_package(coco-io CONFIG)
-find_package(coco-qdec CONFIG)
-find_package(coco-devboards CONFIG)
-find_package(coco-spi CONFIG)
+#find_package(coco-qdec CONFIG)
 
 # source
 add_subdirectory(coco)

@@ -37,9 +37,9 @@ foreach(COMPONENT ${coco-devboards_COMPONENT_NAMES})
 
 		target_link_libraries(${NAME}
 			coco::coco
+			${COMPONENT}
 			coco-loop::coco-loop
 			${PROJECT_NAME}
-			${COMPONENT}
 		)
 
 		# generate hex file for flashing the target
@@ -68,10 +68,10 @@ foreach(COMPONENT ${coco-devboards_COMPONENT_NAMES})
 
 		target_link_libraries(${NAME}
 			coco::coco
-			coco-loop::coco-loop
-			coco-qdec::coco-qdec
-			${PROJECT_NAME}
 			${COMPONENT}
+			coco-loop::coco-loop
+			coco-io::coco-io
+			${PROJECT_NAME}
 		)
 
 		# generate hex file for flashing the target

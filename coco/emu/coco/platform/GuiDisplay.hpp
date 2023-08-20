@@ -7,11 +7,11 @@ namespace coco {
 
 /**
 	Monochrome display on the emulator gui.
-	Usage: gui.draw<Display>(image, width, height);
+	Usage: gui.draw<GuiDisplay>(image, width, height);
 */
-class Display : public Gui::Renderer {
+class GuiDisplay : public Gui::Renderer {
 public:
-	Display();
+	GuiDisplay();
 
 	Gui::Size draw(float x, float y, const uint8_t *buffer, int width, int height);
 

@@ -17,7 +17,7 @@ struct Drivers {
 	Loop_emu loop;
 	SSD130x_emu buffer{loop, DISPLAY_WIDTH, DISPLAY_HEIGHT};
 	Newline_emu newline1{loop}; // start a new line in the emulateor gui
-	RotaryButton_emu rotaryButton{loop, 100};
-	Trigger &trigger = rotaryButton;
-	QuadratureDecoder &quadratureDecoder = rotaryButton;
+	RotaryButton_emu buttons{loop, true, 100};
+	//Trigger &trigger = rotaryButton;
+	//QuadratureDecoder &quadratureDecoder = rotaryButton;
 };

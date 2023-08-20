@@ -8,7 +8,7 @@ namespace coco {
 /**
 	Implementation of an SSD1306/SSD1309 emulator that prints the dipslay contents to std::cout
 */
-class SSD130x_cout : public BufferImpl, public Loop_native::YieldHandler {
+class SSD130x_cout : public BufferImpl {
 public:
 	/**
 		Constructor
@@ -25,9 +25,11 @@ public:
 	void cancel() override;
 
 protected:
-	void handle() override;
+	void handle();
 
 	Loop_native &loop;
+	TimedTask<Callback> callback;
+
 	int width;
 	int height;
 
