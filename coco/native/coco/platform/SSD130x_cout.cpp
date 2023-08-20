@@ -6,7 +6,11 @@
 namespace coco {
 
 SSD130x_cout::SSD130x_cout(Loop_native &loop, int width, int height)
-	: BufferImpl(new uint8_t[width * ((height + 7) >> 3)], width * ((height + 7) >> 3), State::READY), loop(loop), width(width), height(height) {
+	: BufferImpl(new uint8_t[width * ((height + 7) >> 3)], width * ((height + 7) >> 3), State::READY)
+	, loop(loop)
+	, callback(makeCallback<SSD130x_cout, &SSD130x_cout::handle>(this))
+	, width(width), height(height)
+{
 }
 
 SSD130x_cout::~SSD130x_cout() {
@@ -31,8 +35,7 @@ bool SSD130x_cout::startInternal(int size, Op op) {
 	this->xferred = size;
 	this->op = op;
 
-	if (!this->inList())
-		this->loop.yieldHandlers.add(*this);
+	this->loop.invoke(this->callback);
 
 	// set state
 	setBusy();
@@ -44,13 +47,11 @@ void SSD130x_cout::cancel() {
 	if (this->stat != State::BUSY)
 		return;
 
-	remove();
+	this->callback.remove();
 	setReady(0);
 }
 
 void SSD130x_cout::handle() {
-	remove();
-
 	auto op = this->op;
 	auto data = this->dat;
 	int transferred = this->xferred;

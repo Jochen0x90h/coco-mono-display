@@ -27,10 +27,10 @@ elseif(${PLATFORM} STREQUAL "emu")
 	# emulator platform with graphical user interface (Windows, MacOS, Linux)
 	target_sources(${PROJECT_NAME}
 		PUBLIC FILE_SET platform_headers TYPE HEADERS BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/emu FILES
-			emu/coco/platform/Display.hpp
+			emu/coco/platform/GuiDisplay.hpp
 			emu/coco/platform/SSD130x_emu.hpp
 		PRIVATE
-			emu/coco/platform/Display.cpp
+			emu/coco/platform/GuiDisplay.cpp
 			emu/coco/platform/SSD130x_emu.cpp
 	)
 endif()
@@ -40,7 +40,6 @@ target_link_libraries(${PROJECT_NAME}
 	coco-loop::coco-loop
 	coco-buffer::coco-buffer
 	coco-io::coco-io
-	coco-qdec::coco-qdec
 )
 
 target_include_directories(${PROJECT_NAME}

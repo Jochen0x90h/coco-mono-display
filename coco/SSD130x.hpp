@@ -34,8 +34,11 @@ public:
 		return (i2c ? 1 : 0) + wh;
 	}
 
-	// addressing mode: 2 = page, 0 = horizontal, 1 = vertical  (2 bytes)
+	// addressing mode (2 bytes)
 	static constexpr int ADDRESSING_MODE = 0x20;
+	static constexpr int ADDRESSING_MODE_HORIZONTAL = 0;
+	static constexpr int ADDRESSING_MODE_VERTICAL = 1;
+	static constexpr int ADDRESSING_MODE_PAGE = 2;
 
 	// column start/end address (3 bytes)
 	static constexpr int COLUMN_ADDRESS = 0x21;
@@ -129,7 +132,7 @@ public:
 		Display the current contents of the bufferSet content of whole display
 		@return use co_await on return value to await end of operation
 	*/
-	[[nodiscard]] Awaitable<Buffer::State> display();
+	[[nodiscard]] Awaitable<> display();
 
 	void startDisplay();
 

@@ -1,9 +1,9 @@
-#include "Display.hpp"
+#include "GuiDisplay.hpp"
 
 
 namespace coco {
 
-Display::Display()
+GuiDisplay::GuiDisplay()
 	: Renderer("#version 330\n"
 		"uniform sampler2D tex;\n"
 		"in vec2 xy;\n"
@@ -15,7 +15,7 @@ Display::Display()
 	this->texture = Gui::createTexture();
 }
 
-Gui::Size Display::draw(float x, float y, const uint8_t *buffer, int width, int height) {
+Gui::Size GuiDisplay::draw(float x, float y, const uint8_t *buffer, int width, int height) {
 	const float w = 0.4f;
 	const float h = 0.2f;
 

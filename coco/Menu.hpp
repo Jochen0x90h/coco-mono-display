@@ -2,6 +2,7 @@
 
 #include "font/tahoma_8pt.hpp"
 #include "SSD130x.hpp"
+#include <coco/Input.hpp>
 
 
 namespace coco {
@@ -11,6 +12,13 @@ public:
 
 	Menu(SSD130x &display) : display(display) {
 	}
+
+	/**
+		Begin a menu
+		@param buttons buttons that control the menu, either d-pad or rotary button
+		@return true when the menu should be exited
+	*/
+	bool begin(Input &buttons);
 
 	/**
 		Add a divider line to the menu
@@ -119,24 +127,6 @@ public:
 	}
 
 	/**
-		Activate the current menu entry or cycle edit index. Call e.g. when a button was pressed
-	*/
-	void activate() {this->activated = true;}
-
-	bool exit() {
-		if (this->editIndex > 0) {
-			--this->editIndex;
-			return false;
-		}
-		return true;
-	}
-
-	/**
-		Move the selection up (-1) or down (1). Call e.g. when up/down or rotary button was pressed/moved
-	*/
-	void moveSelection(int delta);
-
-	/**
 		Return the currently selected menu entry
 	*/
 	int getSelected() const {return this->selected;}
@@ -153,7 +143,7 @@ public:
 		of the field being edited
 	*/
 	int edit(int editCount = 1);
-	//int getDelta() const {return this->delta;}
+	int delta() const {return this->d;}
 
 	void remove() {--this->selected;}
 
@@ -161,11 +151,13 @@ public:
 		Show the menu on the display
 		@return use co_await and select on the return value to wait for redraw and user input, e.g. buttons
 	*/
-	[[nodiscard]] Awaitable<Buffer::State> show();
+	[[nodiscard]] Awaitable<> show();
 
 protected:
 
 	enum class State {
+		INIT,
+
 		// display is ready and can be filled with content
 		READY,
 
@@ -177,23 +169,19 @@ protected:
 	};
 
 	Bitmap bitmap() {
-		// return a dummy bitmap if stat is dirty or a transfer is in progress
-		if (this->state == State::DIRTY || this->display.buffer().busy())
+		// return a dummy bitmap if state is dirty or a transfer is in progress
+		if (this->state != State::READY)
 			return Bitmap();
-
-		Bitmap bitmap = this->display.bitmap();
-		if (this->state == State::BUSY) {
-			bitmap.clear();
-			this->state = State::READY;
-		}
-
-		return bitmap;
+		return this->display.bitmap();
 	}
 
 	SSD130x &display;
-	State state = State::BUSY;
+	State state = State::INIT;
+
+	int8_t buttonState[2];
 
 	bool activated = false;
+	int d;
 
 	enum class Section : uint8_t {
 		BEGIN,
@@ -224,6 +212,8 @@ protected:
 
 	// number of entries in the menu, captured after the last run
 	int entryCount;
+
+	CoroutineTaskList<> dummyTasks;
 };
 
 

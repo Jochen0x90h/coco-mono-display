@@ -10,7 +10,15 @@ AwaitableCoroutine SSD130x::init() {
 		this->buf.setHeader<uint8_t>(0); // Co = 0, D/C = 0
 
 	auto d = this->buf.data();
-	int i = 0;
+	int i;
+
+	// first transfer may not work after reset
+	i = 0;
+	d[i++] = DISPLAY_OFF;
+	co_await this->buf.write(i, Buffer::Op::COMMAND);
+
+	// now do the real initialization
+	i = 0;
 	d[i++] = DISPLAY_OFF;
 
 	d[i++] = CLOCK_DIV;
@@ -26,9 +34,6 @@ AwaitableCoroutine SSD130x::init() {
 
 	d[i++] = CHARGEPUMP;
 	d[i++] = externalVcc ? 0x10 : 0x14; // enable when no external vcc
-
-	d[i++] = ADDRESSING_MODE;
-	d[i++] = 0; // horizontal
 
 	d[i++] = SEGMENT_REMAP1;
 
@@ -61,6 +66,20 @@ AwaitableCoroutine SSD130x::init() {
 
 	d[i++] = VCOM_DETECT;
 	d[i++] = 0x40;
+
+	// horizontal addressing mode
+	d[i++] = ADDRESSING_MODE;
+	d[i++] = ADDRESSING_MODE_HORIZONTAL;
+
+	// set column start/end and reset address pointer
+	d[i++] = COLUMN_ADDRESS;
+	d[i++] = 0;
+	d[i++] = 127;
+
+	// set page start/end and reset address pointer
+	d[i++] = PAGE_ADDRESS;
+	d[i++] = 0;
+	d[i++] = 7;
 
 	d[i++] = ALL_ON_DISABLE;
 
@@ -101,7 +120,7 @@ AwaitableCoroutine SSD130x::setContrast(uint8_t contrast) {
 	co_await this->buf.write(2, Buffer::Op::COMMAND);
 }
 
-Awaitable<Buffer::State> SSD130x::display() {
+Awaitable<> SSD130x::display() {
 	if ((this->flags & Flags::I2C) != 0)
 		this->buf.setHeader<uint8_t>(0x40); // Co = 0, D/C = 1
 	return this->buf.write(bufferSize(this->w, this->h));

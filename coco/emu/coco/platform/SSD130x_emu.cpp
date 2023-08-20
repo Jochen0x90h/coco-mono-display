@@ -1,5 +1,5 @@
 #include "SSD130x_emu.hpp"
-#include "Display.hpp"
+#include "GuiDisplay.hpp"
 
 
 namespace coco {
@@ -8,6 +8,8 @@ SSD130x_emu::SSD130x_emu(Loop_emu &loop, int width, int height)
 	: BufferImpl(new uint8_t[width * ((height + 7) >> 3)], width * ((height + 7) >> 3), State::READY), width(width), height(height)
 	, image(new uint8_t[width * height])
 {
+	std::fill(this->image, this->image + width * height, 0);
+
 	loop.guiHandlers.add(*this);
 }
 
@@ -94,6 +96,8 @@ void SSD130x_emu::handle(Gui &gui) {
 			uint8_t background = (!this->enabled || this->allOn) ? foreground : (48 * this->contrast) / 255;
 			if (this->inverse)
 				std::swap(foreground, background);
+
+			// convert from bitmap to grayscale
 			for (int j = 0; j < height; ++j) {
 				uint8_t *line = &this->image[width * j];
 				for (int i = 0; i < width; ++i) {
@@ -106,7 +110,7 @@ void SSD130x_emu::handle(Gui &gui) {
 		setReady();
 	}
 
-	gui.draw<Display>(this->image, this->width, this->height);
+	gui.draw<GuiDisplay>(this->image, this->width, this->height);
 }
 
 } // namespace coco

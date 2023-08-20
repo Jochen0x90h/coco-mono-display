@@ -14,4 +14,5 @@ constexpr SSD130x::Flags DISPLAY_FLAGS = SSD130x::Flags::NONE;
 struct Drivers {
 	Loop_native loop;
 	SSD130x_cout buffer{loop, 128, 64};
+	//RotaryButton
 };

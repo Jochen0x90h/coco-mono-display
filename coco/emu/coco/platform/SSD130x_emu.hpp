@@ -37,7 +37,7 @@ protected:
 	bool allOn = false;
 	bool inverse = false;
 
-	// grayscale display image
+	// grayscale display image (one byte for each pixel)
 	uint8_t *image;
 };
 
