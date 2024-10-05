@@ -1,4 +1,4 @@
-#include <coco/BufferImpl.hpp>
+#include <coco/Buffer.hpp>
 #include <coco/platform/Loop_native.hpp>
 #include <string>
 
@@ -8,7 +8,7 @@ namespace coco {
 /**
 	Implementation of an SSD1306/SSD1309 emulator that prints the dipslay contents to std::cout
 */
-class SSD130x_cout : public BufferImpl {
+class SSD130x_cout : public Buffer {
 public:
 	/**
 		Constructor
@@ -19,10 +19,8 @@ public:
 	SSD130x_cout(Loop_native &loop, int width, int height);
 	~SSD130x_cout() override;
 
-	bool setHeader(const uint8_t *data, int size) override;
-	using BufferImpl::setHeader;
-	bool startInternal(int size, Op op) override;
-	void cancel() override;
+	bool start(Op op) override;
+	bool cancel() override;
 
 protected:
 	void handle();

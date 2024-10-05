@@ -6,7 +6,7 @@
 namespace coco {
 
 SSD130x_cout::SSD130x_cout(Loop_native &loop, int width, int height)
-	: BufferImpl(new uint8_t[width * ((height + 7) >> 3)], width * ((height + 7) >> 3), State::READY)
+	: Buffer(new uint8_t[1 + width * ((height + 7) >> 3)], 1 + width * ((height + 7) >> 3), State::READY)
 	, loop(loop)
 	, callback(makeCallback<SSD130x_cout, &SSD130x_cout::handle>(this))
 	, width(width), height(height)
@@ -14,25 +14,18 @@ SSD130x_cout::SSD130x_cout(Loop_native &loop, int width, int height)
 }
 
 SSD130x_cout::~SSD130x_cout() {
-	delete [] this->dat;
+	delete [] this->p.data;
 }
 
-bool SSD130x_cout::setHeader(const uint8_t *data, int size) {
-	// I2C header
-	assert(size <= 1);
-	return size <= 1;
-}
-
-bool SSD130x_cout::startInternal(int size, Op op) {
-	if (this->stat != State::READY) {
-		assert(false);
+bool SSD130x_cout::start(Op op) {
+	if (this->st.state != State::READY) {
+		assert(this->st.state != State::BUSY);
 		return false;
 	}
 
 	// check if WRITE flag is set
 	assert((op & Op::WRITE) != 0);
 
-	this->xferred = size;
 	this->op = op;
 
 	this->loop.invoke(this->callback);
@@ -43,20 +36,22 @@ bool SSD130x_cout::startInternal(int size, Op op) {
 	return true;
 }
 
-void SSD130x_cout::cancel() {
-	if (this->stat != State::BUSY)
-		return;
+bool SSD130x_cout::cancel() {
+	if (this->st.state != State::BUSY)
+		return false;
 
 	this->callback.remove();
 	setReady(0);
+
+	return true;
 }
 
 void SSD130x_cout::handle() {
 	auto op = this->op;
-	auto data = this->dat;
-	int transferred = this->xferred;
+	auto data = this->p.data + this->p.headerSize;
+	int size = this->p.size - this->p.headerSize;
 
-	if ((op & Op::WRITE) != 0 && (op & Op::COMMAND) == 0 && transferred >= this->width * ((this->height + 7) >> 3)) {
+	if ((op & Op::WRITE) != 0 && (op & Op::COMMAND) == 0 && size >= this->width * ((this->height + 7) >> 3)) {
 		std::cout << std::endl;
 		for (int y = 0; y < this->height; ++y) {
 			uint8_t *line = data + (y >> 3) * this->width;

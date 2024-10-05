@@ -13,7 +13,7 @@ class GuiDisplay : public Gui::Renderer {
 public:
 	GuiDisplay();
 
-	Gui::Size draw(float x, float y, const uint8_t *buffer, int width, int height);
+	float2 draw(float2 position, const uint8_t *buffer, int width, int height);
 
 protected:
 	GLuint texture;
