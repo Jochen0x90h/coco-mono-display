@@ -1,18 +1,19 @@
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 add_library(${PROJECT_NAME})
 target_sources(${PROJECT_NAME}
 	PUBLIC FILE_SET headers TYPE HEADERS FILES
 		Bitmap.hpp
 		DrawMode.hpp
-		Font.hpp
 		Menu.hpp
 		SSD130x.hpp
-		font/tahoma_8pt.hpp
+		font/header.hpp
+		font/footer.hpp
+		font/tahoma8pt1bpp.hpp
 	PRIVATE
 		Bitmap.cpp
-		Font.cpp
 		Menu.cpp
 		SSD130x.cpp
-		font/tahoma_8pt.cpp
+		font/tahoma8pt1bpp.cpp
 )
 
 if(${PLATFORM} STREQUAL "native")
@@ -38,7 +39,8 @@ endif()
 target_link_libraries(${PROJECT_NAME}
 	coco::coco
 	coco-loop::coco-loop
-	coco-buffer::coco-buffer
+	coco-device::coco-device
+	coco-font::coco-font
 	coco-io::coco-io
 )
 
@@ -51,6 +53,4 @@ target_include_directories(${PROJECT_NAME}
 install(TARGETS ${PROJECT_NAME}
 	FILE_SET headers DESTINATION include/coco
 	FILE_SET platform_headers DESTINATION include
-	LIBRARY DESTINATION lib
-	ARCHIVE DESTINATION lib
 )

@@ -12,20 +12,19 @@ GuiDisplay::GuiDisplay()
 		"pixel = texture(tex, xy).xxxw;\n"
 		"}\n")
 {
-	this->texture = Gui::createTexture();
+	this->texture = Gui::createTexture(GL_LINEAR);
 }
 
-Gui::Size GuiDisplay::draw(float x, float y, const uint8_t *buffer, int width, int height) {
-	const float w = 0.4f;
-	const float h = 0.2f;
+float2 GuiDisplay::draw(float2 position, const uint8_t *buffer, int width, int height) {
+	const float2 size = {0.4f, 0.2f};
 
-	setState(x, y, w, h);
+	setState(position, size);
 	glBindTexture(GL_TEXTURE_2D, this->texture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, buffer);
 	drawAndResetState();
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	return {w, h};
+	return size;
 }
 
 } // namespace coco

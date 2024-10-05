@@ -1,16 +1,17 @@
 #pragma once
 
-#include "font/tahoma_8pt.hpp"
 #include "SSD130x.hpp"
-#include <coco/Input.hpp>
+#include <coco/Font.hpp>
+#include <coco/InputDevice.hpp>
 
 
 namespace coco {
 
 class Menu {
 public:
+	using Stream = BitmapStream;
 
-	Menu(SSD130x &display) : display(display) {
+	Menu(SSD130x &display, const Font &font) : display(display), font(font) {
 	}
 
 	/**
@@ -18,7 +19,19 @@ public:
 		@param buttons buttons that control the menu, either d-pad or rotary button
 		@return true when the menu should be exited
 	*/
-	bool begin(Input &buttons);
+	bool begin(InputDevice &buttons);
+
+	/**
+		Show the menu on the display. Should be awaited before begin() gets called again
+		@return use co_await and select on the return value to wait for redraw and user input, e.g. buttons
+	*/
+	[[nodiscard]] Awaitable<Buffer::Events> show();
+
+	/**
+	 * Wait for user input
+	 */
+	[[nodiscard]] auto untilInput(InputDevice &buttons) {return buttons.untilInput(this->seq);}
+
 
 	/**
 		Add a divider line to the menu
@@ -27,70 +40,6 @@ public:
 	void beginSection();
 	void endSection();
 
-	enum class Command {
-		UNDERLINE_ON = 1,
-		UNDERLINE_OFF = 2,
-		INVERT_ON = 3,
-		INVERT_OFF = 4,
-	};
-
-	class Stream {//} : public ::Stream {
-	public:
-		int x;
-		int y;
-		Bitmap bitmap;
-		int16_t underlineCount = 0;
-		int16_t underlineStart;
-		int16_t invertCount = 0;
-		int16_t invertStart;
-
-
-		Stream(int x, int y, const Bitmap &bitmap) : x(x), y(y), bitmap(bitmap) {}
-
-		//~Stream() override {}
-
-		Stream &operator <<(char ch) {// override {
-			this->x = this->bitmap.drawText(this->x, this->y, tahoma_8pt, String(&ch, 1));
-			return *this;
-		}
-
-		Stream &operator <<(String const &str) {//override {
-			this->x = this->bitmap.drawText(this->x, this->y, tahoma_8pt, str);
-			return *this;
-		}
-
-		Stream &operator <<(Command command) {//override {
-			switch (command) {
-				case Command::UNDERLINE_ON:
-					if (this->underlineCount == 0)
-						this->underlineStart = this->x;
-					++this->underlineCount;
-					break;
-				case Command::UNDERLINE_OFF:
-					if (this->underlineCount > 0) {
-						if (--this->underlineCount == 0) {
-							int x = this->underlineStart;
-							this->bitmap.hLine(x, this->y + tahoma_8pt.height, this->x - x - 1);
-						}
-					}
-					break;
-				case Command::INVERT_ON:
-					if (this->invertCount == 0)
-						this->invertStart = this->x;
-					++this->invertCount;
-					break;
-				case Command::INVERT_OFF:
-					if (this->invertCount > 0) {
-						if (--this->invertCount == 0) {
-							int x = this->invertStart;
-							this->bitmap.fillRectangle(x - 1, this->y, this->x - x + 1, tahoma_8pt.height, DrawMode::FLIP);
-						}
-					}
-					break;
-			}
-			return *this;
-		}
-	};
 
 	Stream stream();
 
@@ -147,37 +96,14 @@ public:
 
 	void remove() {--this->selected;}
 
-	/**
-		Show the menu on the display
-		@return use co_await and select on the return value to wait for redraw and user input, e.g. buttons
-	*/
-	[[nodiscard]] Awaitable<> show();
 
 protected:
 
-	enum class State {
-		INIT,
-
-		// display is ready and can be filled with content
-		READY,
-
-		// redraw is needed
-		DIRTY,
-
-		// transfer is in progress
-		BUSY,
-	};
-
-	Bitmap bitmap() {
-		// return a dummy bitmap if state is dirty or a transfer is in progress
-		if (this->state != State::READY)
-			return Bitmap();
-		return this->display.bitmap();
-	}
-
 	SSD130x &display;
-	State state = State::INIT;
+	const Font &font;
+	bool init = true;
 
+	int seq;
 	int8_t buttonState[2];
 
 	bool activated = false;
@@ -227,10 +153,10 @@ struct Underline {
 template <typename A>
 Menu::Stream &operator <<(Menu::Stream &s, Underline<A> underline) {
 	if (underline.on)
-		s << Menu::Command::UNDERLINE_ON;
+		s << Menu::Stream::Command::UNDERLINE_ON;
 	s << underline.a;
 	if (underline.on)
-		s << Menu::Command::UNDERLINE_OFF;
+		s << Menu::Stream::Command::UNDERLINE_OFF;
 	return s;
 }
 

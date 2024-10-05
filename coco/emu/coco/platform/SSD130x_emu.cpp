@@ -5,35 +5,28 @@
 namespace coco {
 
 SSD130x_emu::SSD130x_emu(Loop_emu &loop, int width, int height)
-	: BufferImpl(new uint8_t[width * ((height + 7) >> 3)], width * ((height + 7) >> 3), State::READY), width(width), height(height)
-	, image(new uint8_t[width * height])
+	: Buffer(new uint8_t[1 + width * ((height + 7) >> 3)], 1 + width * ((height + 7) >> 3), State::READY), width(width), height(height)
+	, image(new uint8_t[width * height * 4])
 {
-	std::fill(this->image, this->image + width * height, 0);
+	std::fill(this->image, this->image + width * height * 4, 0);
 
 	loop.guiHandlers.add(*this);
 }
 
 SSD130x_emu::~SSD130x_emu() {
-	delete [] this->dat;
+	delete [] this->p.data;
 	delete [] this->image;
 }
 
-bool SSD130x_emu::setHeader(const uint8_t *data, int size) {
-	// I2C header
-	assert(size <= 1);
-	return size <= 1;
-}
-
-bool SSD130x_emu::startInternal(int size, Op op) {
-	if (this->stat != State::READY) {
-		assert(false);
+bool SSD130x_emu::start(Op op) {
+	if (this->st.state != State::READY) {
+		assert(this->st.state != State::BUSY);
 		return false;
 	}
 
 	// check if WRITE flag is set
 	assert((op & Op::WRITE) != 0);
 
-	this->xferred = size;
 	this->op = op;
 
 	// set state
@@ -42,21 +35,23 @@ bool SSD130x_emu::startInternal(int size, Op op) {
 	return true;
 }
 
-void SSD130x_emu::cancel() {
-	if (this->stat != State::BUSY)
-		return;
+bool SSD130x_emu::cancel() {
+	if (this->st.state != State::BUSY)
+		return false;
 
 	setReady(0);
+
+	return true;
 }
 
 void SSD130x_emu::handle(Gui &gui) {
-	if (this->stat == State::BUSY) {
+	if (this->st.state == State::BUSY) {
 		auto op = this->op;
-		auto data = this->dat;
-		int transferred = this->xferred;
+		auto data = this->p.data + this->p.headerSize;
+		int size = this->p.size - this->p.headerSize;
 		if ((op & Op::COMMAND) != 0) {
 			// command
-			for (int i = 0; i < transferred; ++i) {
+			for (int i = 0; i < size; ++i) {
 				switch (data[i]) {
 					// set contrast control
 				case 0x81:
@@ -99,10 +94,15 @@ void SSD130x_emu::handle(Gui &gui) {
 
 			// convert from bitmap to grayscale
 			for (int j = 0; j < height; ++j) {
-				uint8_t *line = &this->image[width * j];
+				uint8_t *line = &this->image[width * j *4];
 				for (int i = 0; i < width; ++i) {
 					bool bit = (data[i + width * (j >> 3)] & (1 << (j & 7))) != 0;
-					line[i] = bit ? foreground : background;
+					uint8_t pixel = bit ? foreground : background;
+					//line[i] = pixel;
+					line[i * 2] = pixel;
+					line[i * 2 + 1] = pixel;
+					line[i * 2 + width * 2] = pixel;
+					line[i * 2 + width * 2 + 1] = pixel;
 				}
 			}
 		}
@@ -110,7 +110,7 @@ void SSD130x_emu::handle(Gui &gui) {
 		setReady();
 	}
 
-	gui.draw<GuiDisplay>(this->image, this->width, this->height);
+	gui.draw<GuiDisplay>(this->image, this->width * 2, this->height * 2);
 }
 
 } // namespace coco

@@ -10,7 +10,7 @@ void Bitmap::fillRectangle(int x, int y, int width, int height, DrawMode mode) {
 	uint8_t *data = this->data;
 	int w = this->width;
 	int h = this->height;
-	
+
 	// clamp to border
 	if (x < 0) {
 		width += x;
@@ -28,7 +28,7 @@ void Bitmap::fillRectangle(int x, int y, int width, int height, DrawMode mode) {
 	}
 	if (width <= 0 || height <= 0)
 		return;
-	
+
 	int endRows = (y + height) & 7;
 	uint8_t *page = &data[(y >> 3) * w] + x;
 	uint8_t *pageEnd = &data[((y + height) >> 3) * w] + x;
@@ -55,7 +55,7 @@ void Bitmap::fillRectangle(int x, int y, int width, int height, DrawMode mode) {
 		}
 		page += w;
 	}
-	
+
 	// full pages
 	while (page < pageEnd) {
 		for (int i = 0; i < width; ++i) {
@@ -128,7 +128,7 @@ void Bitmap::copyBitmapH(int x, int y, int width, int height, const uint8_t *bit
 	// bitmap
 	for (int j = 0; j < height; ++j) {
 		uint8_t *page = &data[((y + j) >> 3) * w] + x;
-		
+
 		for (int i = 0; i < width; ++i) {
 			uint8_t bit = 1 << ((y + j) & 7);
 			if (bitmap[(o + i) >> 3] & (0x80 >> ((o + i) & 7))) {
@@ -161,6 +161,27 @@ void Bitmap::copyBitmapH(int x, int y, int width, int height, const uint8_t *bit
 		}
 		bitmap += bitmapStride;
 	}
+}
+
+int Bitmap::drawText(int x, int y, const Font &font, String text, DrawMode mode) {
+	for (auto info : font.glyphRange(text)) {
+		if (!info.printable()) {
+			// special character
+			x += info.width() + font.gapWidth;
+		} else {
+			auto glyph = info.glyph();
+
+			// draw character
+			copyBitmapH(x, y + glyph.y, glyph.size.x, glyph.size.y, font.data + glyph.offset, mode);
+
+			// add character width
+			x += glyph.size.x;
+
+			// add gap between characters
+			x += font.gapWidth;
+		}
+	}
+	return x;
 }
 
 } // namespace coco

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.19)
 
 # set project
-project(coco-monodisplay)
+project(coco-mono-display)
 
 #set(CMAKE_VERBOSE_MAKEFILE ON)
 set(VERBOSE 1)
@@ -29,11 +29,13 @@ message("*** Platform: ${PLATFORM}")
 
 # dependencies
 find_package(coco CONFIG)
-find_package(coco-devboards CONFIG)
 find_package(coco-loop CONFIG)
-find_package(coco-buffer CONFIG)
+find_package(coco-device CONFIG)
+find_package(coco-font CONFIG)
 find_package(coco-io CONFIG)
-#find_package(coco-qdec CONFIG)
+find_package(coco-spi CONFIG)
+find_package(coco-i2c CONFIG)
+find_package(coco-devboards CONFIG)
 
 # source
 add_subdirectory(coco)

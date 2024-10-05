@@ -1,9 +1,9 @@
 #pragma once
 
+#include "DrawMode.hpp"
 #include <coco/assert.hpp>
 #include <coco/String.hpp>
-#include "Font.hpp"
-#include "DrawMode.hpp"
+#include <coco/Font.hpp>
 
 
 namespace coco {
@@ -39,39 +39,16 @@ public:
 
 	void copyBitmapH(int x, int y, int width, int height, const uint8_t *bitmap, DrawMode mode);
 
-
 	/**
 		Draw text onto bitmap
 		@param x X-coordinate of upper left point of the first character
 		@param y Y-coordinate of upper left point of the first character
 		@param font font to use
 		@param text text to draw
-		@param space space between characters
 		@param mode draw mode
 		@return x coordinate of end of text
 	*/
-	int drawText(int x, int y, const Font &font, String text, int space = 1,
-		DrawMode mode = DrawMode::SET /*| DrawMode::BACK_KEEP*/)
-	{
-		for (unsigned char ch : text) {
-			if (ch == '\t') {
-				x += Font::TAB_WIDTH;
-			} else {
-				if (ch < font.first || ch > font.last)
-					ch = '?';
-
-				// draw character
-				const Character &character = font.characters[ch - font.first];
-				copyBitmapH(x, y, character.width, font.height, font.bitmap + character.offset, mode);
-				x += character.width;
-
-				// draw space
-				//fillBitmap(W, H, this->data, x, y, space, font.height, DrawMode(uint8_t(mode) >> 2));
-				x += space;
-			}
-		}
-		return x;
-	}
+	int drawText(int x, int y, const Font &font, String text, DrawMode mode = DrawMode::SET);
 
 	/**
 		Copy entire bitmap
@@ -90,6 +67,75 @@ public:
 	uint8_t *data;
 	int width;
 	int height;
+};
+
+
+class BitmapStream {
+public:
+	// stream command
+	enum class Command {
+		UNDERLINE_ON = 1,
+		UNDERLINE_OFF = 2,
+		INVERT_ON = 3,
+		INVERT_OFF = 4,
+	};
+
+
+	Bitmap bitmap;
+	const Font &font;
+	int x;
+	int y;
+	int16_t underlineCount = 0;
+	int16_t underlineStart;
+	int16_t invertCount = 0;
+	int16_t invertStart;
+
+
+	BitmapStream(const Bitmap &bitmap, const Font &font, int x, int y) : bitmap(bitmap), font(font), x(x), y(y) {}
+
+	//~Stream() override {}
+
+	BitmapStream &operator <<(char ch) {// override {
+		this->x = this->bitmap.drawText(this->x, this->y, this->font, String(&ch, 1));
+		return *this;
+	}
+
+	BitmapStream &operator <<(String const &str) {//override {
+		this->x = this->bitmap.drawText(this->x, this->y, this->font, str);
+		return *this;
+	}
+
+	BitmapStream &operator <<(Command command) {//override {
+		switch (command) {
+			case Command::UNDERLINE_ON:
+				if (this->underlineCount == 0)
+					this->underlineStart = this->x;
+				++this->underlineCount;
+				break;
+			case Command::UNDERLINE_OFF:
+				if (this->underlineCount > 0) {
+					if (--this->underlineCount == 0) {
+						int x = this->underlineStart;
+						this->bitmap.hLine(x, this->y + this->font.height, this->x - x - 1);
+					}
+				}
+				break;
+			case Command::INVERT_ON:
+				if (this->invertCount == 0)
+					this->invertStart = this->x;
+				++this->invertCount;
+				break;
+			case Command::INVERT_OFF:
+				if (this->invertCount > 0) {
+					if (--this->invertCount == 0) {
+						int x = this->invertStart;
+						this->bitmap.fillRectangle(x - 1, this->y, this->x - x + 1, this->font.height, DrawMode::FLIP);
+					}
+				}
+				break;
+		}
+		return *this;
+	}
 };
 
 } // namespace coco

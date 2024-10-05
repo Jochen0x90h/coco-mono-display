@@ -1,8 +1,9 @@
 #pragma once
 
 #include "Bitmap.hpp"
-#include <coco/Coroutine.hpp>
 #include <coco/Buffer.hpp>
+#include <coco/Coroutine.hpp>
+#include <coco/Loop.hpp>
 
 
 namespace coco {
@@ -18,13 +19,30 @@ class SSD130x {
 public:
 	// flags
 	enum class Flags {
-		NONE = 0,
+		// driver chip
+		SSD1306 = 0,
+		SSD1309 = 1,
+
+		// display is connected via SPI (needs clock phase = 1 and polarity = 1)
+		SPI = 0,
 
 		// display is connected via I2C
-		I2C = 1,
+		I2C = 2,
 
-		// external VCC for SSD1306, SSD1309 does not have this option
-		EXTERNAL_VCC = 2,
+		// flip options
+		FLIP_X = 4,
+		FLIP_Y = 8,
+
+		// com pins configuration
+		COM0 = 0 << 4,
+		COM1 = 1 << 4,
+		COM2 = 2 << 4,
+		COM3 = 3 << 4,
+
+		// display modules
+		ADAFRUIT_OLED_BONNET = SSD1306 | I2C | FLIP_X | FLIP_Y | COM1, // 128x64 1.3"
+		UG_2864ASWPG01_SPI = SSD1309 | SPI | FLIP_X | FLIP_Y | COM1,
+		UG_2864ASWPG01_I2C = SSD1309 | I2C | FLIP_X | FLIP_Y | COM1,
 	};
 
 	static constexpr int bufferSize(int width, int height) {return width * ((height + 7) >> 3);}
@@ -34,66 +52,19 @@ public:
 		return (i2c ? 1 : 0) + wh;
 	}
 
-	// addressing mode (2 bytes)
-	static constexpr int ADDRESSING_MODE = 0x20;
-	static constexpr int ADDRESSING_MODE_HORIZONTAL = 0;
-	static constexpr int ADDRESSING_MODE_VERTICAL = 1;
-	static constexpr int ADDRESSING_MODE_PAGE = 2;
-
-	// column start/end address (3 bytes)
-	static constexpr int COLUMN_ADDRESS = 0x21;
-
-	// page start/end address (3 bytes)
-	static constexpr int PAGE_ADDRESS = 0x22;
-
-	// start line (1 byte, START_LINE + line)
-	static constexpr int START_LINE = 0x40;
-
-	// set contrast (2 bytes)
-	static constexpr int CONTRAST = 0x81;
-
-	//
-	static constexpr int CHARGEPUMP = 0x8D;
-
-	static constexpr int SEGMENT_REMAP0 = 0xA0;
-	static constexpr int SEGMENT_REMAP1 = 0xA1;
-
-	static constexpr int ALL_ON_DISABLE = 0xA4;
-	static constexpr int ALL_ON_ENABLE = 0xA5;
-
-	static constexpr int INVERT_DISABLE = 0xA6;
-	static constexpr int INVERT_ENABLE = 0xA7;
-
-	static constexpr int MULTIPLEX = 0xA8;
-
-	static constexpr int DISPLAY_OFF = 0xAE;
-	static constexpr int DISPLAY_ON = 0xAF;
-
-	static constexpr int COM_SCAN_INC = 0xC0;
-	static constexpr int COM_SCAN_DEC = 0xC8;
-
-	// display offset (2 bytes)
-	static constexpr int DISPLAY_OFFSET = 0xD3;
-
-	// clock divide ratio / oscillator frequency (2 bytes)
-	static constexpr int CLOCK_DIV = 0xD5;
-
-	static constexpr int PRECHARGE_PERIOD = 0xD9;
-
-	// com pins hardware configuration (2 bytes)
-	static constexpr int COM_PINS_CONFIG = 0xDA;
-
-	static constexpr int VCOM_DETECT = 0xDB;
-
-
-	SSD130x(Buffer &buffer, int width, int height, Flags flags = Flags::NONE)
-		: buf(buffer), w(width), h(height), flags(flags) {}
+	SSD130x(Buffer &buffer, int width, int height, Flags flags);
 
 	int width() {return this->w;}
 	int height() {return this->h;}
 
 	/**
+	 * Reset the display
+	 */
+	//[[nodiscard]] AwaitableCoroutine reset(Loop &loop, OutputPins &resetOutput, int resetPin = 1);
+
+	/**
 		Initializate the display
+		@param loop event loop
 		@return use co_await on return value to await end of initialization
 	*/
 	[[nodiscard]] AwaitableCoroutine init();
@@ -129,12 +100,16 @@ public:
 	}
 
 	/**
-		Display the current contents of the bufferSet content of whole display
+		Show the contents of the bitmap on the display
 		@return use co_await on return value to await end of operation
 	*/
-	[[nodiscard]] Awaitable<> display();
+	[[nodiscard]] Awaitable<Buffer::Events> show();
 
-	void startDisplay();
+	/**
+	 * Start writing the bitmap to the display. The application can co_await display.buffer().untilReady() to wait
+	 * for end of write operation
+	 */
+	void startWrite();
 
 protected:
 	Buffer &buf;
