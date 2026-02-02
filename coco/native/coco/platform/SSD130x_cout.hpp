@@ -5,33 +5,30 @@
 
 namespace coco {
 
-/**
-	Implementation of an SSD1306/SSD1309 emulator that prints the dipslay contents to std::cout
-*/
+/// @brief Implementation of an SSD1306/SSD1309 emulator that prints the dipslay contents to std::cout
+///
 class SSD130x_cout : public Buffer {
 public:
-	/**
-		Constructor
-		@param loop event loop
-		@param width width of emulated display
-		@param height height of emulated display
-	*/
-	SSD130x_cout(Loop_native &loop, int width, int height);
-	~SSD130x_cout() override;
+    /// @brief Constructor
+    /// @param loop event loop
+    /// @param width width of emulated display
+    /// @param height height of emulated display
+    SSD130x_cout(Loop_native &loop, int width, int height);
+    ~SSD130x_cout() override;
 
-	bool start(Op op) override;
-	bool cancel() override;
+    bool start(Op op) override;
+    bool cancel() override;
 
 protected:
-	void handle();
+    void handle();
 
-	Loop_native &loop;
-	TimedTask<Callback> callback;
+    Loop_native &loop_;
+    TimedTask<Callback> callback_;
 
-	int width;
-	int height;
+    int width_;
+    int height_;
 
-	Op op;
+    Op op_;
 };
 
 } // namespace coco

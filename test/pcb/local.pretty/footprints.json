@@ -1,7 +1,7 @@
 {
     "Connector-Flat-24_P0.5mm": {
         "description": "Flat display connector 0.5mm pitch 24 pin",
-        "body": [18.4, 6, 1.2],
+        "body": {"size": [18.4, 6, 1.2]},
         "offset": [0, 1.8, 0],
         "silkscreen": false,
         "pads": [
@@ -20,12 +20,22 @@
         ]
     },
     "Jumper": {
-        "description": "Solder jumper",
+        "description": "Jumper with 2 pads and 0.15mm gap",
         "pads": [
             {
                 "pitch": 0.65,
-                "size": [0.5, 1],
-                "count": 2
+                "size": [0.5, 1.0],
+                "shape": 0,
+                "count": 2,
+                "jumper": true
+            }
+        ],
+        "circles": [
+            {
+                "layer": "F.Mask",
+                "fill": true,
+                "radius": 0.51,
+                "center": [0, 0]
             }
         ]
     }

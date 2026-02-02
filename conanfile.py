@@ -23,18 +23,18 @@ class Project(ConanFile):
         return False
 
     def requirements(self):
-        self.requires("coco-device/0.3.0", options={"platform": self.options.platform})
-        self.requires("coco-io/0.6.0", options={"platform": self.options.platform})
-        self.requires("coco-font/0.1.0", options={"platform": self.options.platform})
+        self.requires("coco-device/0.4.0", options={"platform": self.options.platform})
+        self.requires("coco-io/0.7.0", options={"platform": self.options.platform})
+        self.requires("coco-font/0.2.0", options={"platform": self.options.platform})
 
     def build_requirements(self):
-        self.tool_requires("coco-toolchain/0.3.0", options={"platform": self.options.platform})
-        self.test_requires("coco-devboards/0.6.0", options={"platform": self.options.platform})
+        self.tool_requires("coco-toolchain/0.4.0", options={"platform": self.options.platform})
+        self.test_requires("coco-devboards/0.7.0", options={"platform": self.options.platform})
         self.test_requires("coco-spi/0.6.0", options={"platform": self.options.platform})
-        self.test_requires("coco-i2c/0.2.0", options={"platform": self.options.platform})
+        self.test_requires("coco-i2c/0.3.0", options={"platform": self.options.platform})
         if not self.cross():
             # platform is based on a "normal" operating system such as Windows, MacOS, Linux
-            self.test_requires("gtest/1.15.0")
+            self.test_requires("gtest/1.17.0")
 
     keep_imports = True
     def imports(self):

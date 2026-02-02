@@ -6,17 +6,17 @@
 namespace coco {
 
 /**
-	Monochrome display on the emulator gui.
-	Usage: gui.draw<GuiDisplay>(image, width, height);
+    Monochrome display on the emulator gui.
+    Usage: gui.draw<GuiDisplay>(image, width, height);
 */
 class GuiDisplay : public Gui::Renderer {
 public:
-	GuiDisplay();
+    GuiDisplay();
 
-	float2 draw(float2 position, const uint8_t *buffer, int width, int height);
+    float2 draw(float2 position, const uint8_t *buffer, int width, int height);
 
 protected:
-	GLuint texture;
+    GLuint texture;
 };
 
 } // namespace coco

@@ -8,85 +8,90 @@
 
 
 AwaitableCoroutine menu1(SSD130x &display, InputDevice &buttons) {
-	Menu menu(display, coco::tahoma8pt1bpp);
-	int value = 0;
-	while (true) {
-		if (menu.begin(buttons))
-			break;
+    Menu menu(display, coco::tahoma8pt1bpp);
+    int value = 0;
+    int3 value3 = {};
+    while (true) {
+        if (menu.begin(buttons))
+            break;
 
-		bool edit = menu.edit(1) == 1;
-		if (edit)
-			value += menu.delta();
+        bool edit = menu.edit(1) == 1;
+        if (edit)
+            value += menu.delta();
 
-		menu.stream() << "Value: " << underline(dec(value), edit);
-		menu.entry();
+        menu.stream() << "Value: " << underline(dec(value), edit);
+        menu.entry();
 
-		if (menu.entry("Exit"))
-			break;
+        if (menu.entry("Exit"))
+            break;
 
-		// show menu on display and wait for new input
-		co_await menu.show();
-		co_await menu.untilInput(buttons);
-	}
+        // show menu on display and wait for new input
+        co_await menu.show();
+        co_await menu.untilInput(buttons);
+    }
 }
 
 AwaitableCoroutine menu2(SSD130x &display, InputDevice &buttons) {
-	Menu menu(display, coco::tahoma8pt1bpp);
-	while (true) {
-		if (menu.begin(buttons))
-			break;
+    Menu menu(display, coco::tahoma8pt1bpp);
+    while (true) {
+        if (menu.begin(buttons))
+            break;
 
-		if (menu.entry("Exit"))
-			break;
+        if (menu.entry("Exit"))
+            break;
 
-		// show menu on display and wait for new input
-		co_await menu.show();
-		co_await menu.untilInput(buttons);
-	}
+        // show menu on display and wait for new input
+        co_await menu.show();
+        co_await menu.untilInput(buttons);
+    }
 }
 
 Awaitable<> noWait() {
-	return {};
+    return {};
 }
 
-Coroutine mainMenu(Loop &loop, SSD130x &display, InputDevice &buttons) {
-	// initialize and enable the display
-	co_await drivers.resetDisplay();
-	co_await display.init();
-	co_await display.enable();
+Coroutine mainMenu(Loop &loop, OutputPort &out, SSD130x &display, InputDevice &buttons) {
+	// reset display
+    out.set(1, 1);
+    co_await loop.sleep(10ms);
+    out.set(0, 1);
 
-	// menu
-	Menu menu(display, coco::tahoma8pt1bpp);
-	int i = 0;
-	while (true) {
-		// indicate when a redraw occurs
-		debug::toggleGreen();
+    // initialize and enable the display
+    co_await display.init();
+    co_await display.enable();
 
-		// build menu
-		menu.begin(buttons);
-		if (menu.entry("Menu1"))
-			co_await menu1(display, buttons);
-		if (menu.entry("Menu2"))
-			co_await menu2(display, buttons);
-		if (menu.entry("Menu3"))
-			co_await menu2(display, buttons);
-		if (menu.entry("Menu4"))
-			co_await menu2(display, buttons);
-		if (menu.entry("Menu5"))
-			co_await menu2(display, buttons);
-		if (menu.entry("Menu6"))
-			co_await menu2(display, buttons);
+    // menu
+    Menu menu(display, coco::tahoma8pt1bpp);
+    int i = 0;
+    while (true) {
+        // indicate when a redraw occurs
+        debug::toggleGreen();
 
-		// show menu on display and wait for new input
-		co_await menu.show();
-		co_await menu.untilInput(buttons);
-	}
+        // build menu
+        menu.begin(buttons);
+        if (menu.entry("Menu1"))
+            co_await menu1(display, buttons);
+        if (menu.entry("Menu2"))
+            co_await menu2(display, buttons);
+        if (menu.entry("Menu3"))
+            co_await menu2(display, buttons);
+        if (menu.entry("Menu4"))
+            co_await menu2(display, buttons);
+        if (menu.entry("Menu5"))
+            co_await menu2(display, buttons);
+        if (menu.entry("Menu6"))
+            co_await menu2(display, buttons);
+
+        // show menu on display and wait for new input
+        co_await menu.show();
+        co_await menu.untilInput(buttons);
+    }
 }
 
 
 int main(void) {
-	SSD130x display(drivers.buffer, DISPLAY_WIDTH, DISPLAY_HEIGHT, DISPLAY_FLAGS);
-	mainMenu(drivers.loop, display, drivers.buttons);
+    SSD130x display(drivers.buffer, DISPLAY_WIDTH, DISPLAY_HEIGHT, DISPLAY_FLAGS);
+    mainMenu(drivers.loop, drivers.resetPin, display, drivers.buttons);
 
-	drivers.loop.run();
+    drivers.loop.run();
 }
