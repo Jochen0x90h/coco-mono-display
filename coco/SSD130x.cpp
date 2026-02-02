@@ -59,118 +59,124 @@ constexpr int COMMAND_LOCK = 0xFD;
 
 
 SSD130x::SSD130x(Buffer &buffer, int width, int height, Flags flags)
-	: buf(buffer), w(width), h(height), flags(flags)
+    : buffer_(buffer), width_(width), height_(height), flags_(flags)
 {
-	buffer.headerResize((flags & Flags::I2C) != 0 ? 1 : 0);
+    assert(buffer.headerCapacity() > 0);
 }
 
 /*AwaitableCoroutine SSD130x::reset(Loop &loop, OutputPins &resetOutput, int resetPin) {
-	// set reset pin
-	resetOutput.set(resetPin, resetPin);
+    // set reset pin
+    resetOutput.set(resetPin, resetPin);
 
-	// Adafruit bonnet: Wait 300ms for reset circuit (APX803) on the display board, otherwise 100ms would be sufficient
-	co_await loop.sleep(300ms);
+    // Adafruit bonnet: Wait 300ms for reset circuit (APX803) on the display board, otherwise 100ms would be sufficient
+    co_await loop.sleep(300ms);
 
-	// release reset pin
-	resetOutput.set(0, resetPin);
+    // release reset pin
+    resetOutput.set(0, resetPin);
 }*/
 
 AwaitableCoroutine SSD130x::init() {
-	auto flags = this->flags;
+    auto flags = flags_;
 
-	// set header for i2c
-	if ((flags & Flags::I2C) != 0)
-		this->buf.headerData()[0] = 0; // Co = 0, D/C = 0
+    // set header for i2c
+    //if ((flags & Flags::I2C) != 0)
+    //    buffer_.headerData()[0] = 0; // Co = 0, D/C = 0
+    buffer_.header<uint8_t>() = 0; // Co = 0, D/nC = 0
 
-	// initialize the display
-	auto d = this->buf.data();
-	int i = 0;
+    // initialize the display
+    auto d = buffer_.data();
+    int i = 0;
 
-	if ((flags & Flags::SSD1309) != 0) {
-		d[i++] = COMMAND_LOCK;
-		d[i++] = 0x12; // unlock
-	}
+    if ((flags & Flags::SSD1309) != 0) {
+        d[i++] = COMMAND_LOCK;
+        d[i++] = 0x12; // unlock
+    }
 
-	d[i++] = DISPLAY_OFF;
+    d[i++] = DISPLAY_OFF;
 
-	d[i++] = CLOCK_DIV;
-	d[i++] = 0xA0;
+    d[i++] = CLOCK_DIV;
+    d[i++] = 0xA0;
 
-	d[i++] = MULTIPLEX;
-	d[i++] = this->h - 1;
+    d[i++] = MULTIPLEX;
+    d[i++] = height_ - 1;
 
-	d[i++] = DISPLAY_OFFSET;
-	d[i++] = 0; // no offset
+    d[i++] = DISPLAY_OFFSET;
+    d[i++] = 0; // no offset
 
-	d[i++] = START_LINE + 0; // line 0
+    d[i++] = START_LINE + 0; // line 0
 
-	d[i++] = (flags & Flags::FLIP_X) != 0 ? SEGMENT_REMAP1 : SEGMENT_REMAP0;
+    d[i++] = (flags & Flags::FLIP_X) != 0 ? SEGMENT_REMAP1 : SEGMENT_REMAP0;
 
-	d[i++] = (flags & Flags::FLIP_Y) != 0 ? COM_SCAN_DEC : COM_SCAN_INC;
+    d[i++] = (flags & Flags::FLIP_Y) != 0 ? COM_SCAN_DEC : COM_SCAN_INC;
 
-	d[i++] = COM_PINS_CONFIG;
-	d[i++] = (extract(int(flags), int(Flags::COM3)) << 4) | 0x02;
+    d[i++] = COM_PINS_CONFIG;
+    d[i++] = (extract(int(flags), int(Flags::COM3)) << 4) | 0x02;
 
-	d[i++] = CONTRAST;
-	d[i++] = 0xFF;
+    d[i++] = CONTRAST;
+    d[i++] = 0xFF;
 
-	d[i++] = PRECHARGE_PERIOD;
-	d[i++] = 0x82;//F1;
+    d[i++] = PRECHARGE_PERIOD;
+    d[i++] = 0x82;//F1;
 
-	d[i++] = VCOMH_DESELECT;
-	d[i++] = 0x34;//55;
+    d[i++] = VCOMH_DESELECT;
+    d[i++] = 0x34;//55;
 
-	// horizontal addressing mode
-	d[i++] = ADDRESSING_MODE;
-	d[i++] = ADDRESSING_MODE_HORIZONTAL;
+    // horizontal addressing mode
+    d[i++] = ADDRESSING_MODE;
+    d[i++] = ADDRESSING_MODE_HORIZONTAL;
 
-	d[i++] = ALL_ON_DISABLE;
+    d[i++] = ALL_ON_DISABLE;
 
-	d[i++] = INVERT_DISABLE;
+    d[i++] = INVERT_DISABLE;
 
-	// write as command for 4 wire SPI variant
-	co_await this->buf.write(i, Buffer::Op::COMMAND);
+    // write as command for 4 wire SPI variant
+    co_await buffer_.write(i);//, Buffer::Op::COMMAND);
 }
 
 AwaitableCoroutine SSD130x::enable() {
-	if ((this->flags & Flags::I2C) != 0)
-		this->buf.headerData()[0] = 0; // Co = 0, D/C = 0
+    //if ((flags_ & Flags::I2C) != 0)
+    //    buffer_.setHeader<uint8_t>(0); // Co = 0, D/C = 0
+    buffer_.header<uint8_t>() = 0; // Co = 0, D/nC = 0
 
-	//display::enableVcc(true);
-	this->buf[0] = DISPLAY_ON;
-	co_await this->buf.write(1, Buffer::Op::COMMAND);
-	//this->p.enabled = true;
+    //display::enableVcc(true);
+    buffer_[0] = DISPLAY_ON;
+    co_await buffer_.write(1);//, Buffer::Op::COMMAND);
+    //p.enabled = true;
 }
 
 AwaitableCoroutine SSD130x::disable() {
-	if ((this->flags & Flags::I2C) != 0)
-		this->buf.headerData()[0] = 0; // Co = 0, D/C = 0
+    //if ((flags_ & Flags::I2C) != 0)
+    //    buffer_.setHeader<uint8_t>(0); // Co = 0, D/C = 0
+    buffer_.header<uint8_t>() = 0; // Co = 0, D/nC = 0
 
-	this->buf[0] = DISPLAY_OFF;
-	co_await this->buf.write(1, Buffer::Op::COMMAND);
-	//this->p.enabled = true;
-	//display::enableVcc(false);
+    buffer_[0] = DISPLAY_OFF;
+    co_await buffer_.write(1);//, Buffer::Op::COMMAND);
+    //p.enabled = true;
+    //display::enableVcc(false);
 }
 
 AwaitableCoroutine SSD130x::setContrast(uint8_t contrast) {
-	if ((this->flags & Flags::I2C) != 0)
-		this->buf.headerData()[0] = 0; // Co = 0, D/C = 0
+    //if ((flags_ & Flags::I2C) != 0)
+    //    buffer_.setHeader<uint8_t>(0); // Co = 0, D/C = 0
+    buffer_.header<uint8_t>() = 0; // Co = 0, D/nC = 0
 
-	this->buf[0] = CONTRAST;
-	this->buf[1] = contrast;
-	co_await this->buf.write(2, Buffer::Op::COMMAND);
+    buffer_[0] = CONTRAST;
+    buffer_[1] = contrast;
+    co_await buffer_.write(2);//, Buffer::Op::COMMAND);
 }
 
 Awaitable<Buffer::Events> SSD130x::show() {
-	if ((this->flags & Flags::I2C) != 0)
-		this->buf.headerData()[0] = 0x40; // Co = 0, D/C = 1
-	return this->buf.write(bufferSize(this->w, this->h));
+    //if ((flags_ & Flags::I2C) != 0)
+    //    buffer_.setHeader<uint8_t>(0x40); // Co = 0, D/C = 1
+    buffer_.header<uint8_t>() = 0x40; // Co = 0, D/nC = 1
+    return buffer_.write(bufferSize(width_, height_));
 }
 
 void SSD130x::startWrite() {
-	if ((this->flags & Flags::I2C) != 0)
-		this->buf.headerData()[0] = 0x40; // Co = 0, D/C = 1
-	this->buf.startWrite(bufferSize(this->w, this->h));
+    //if ((flags_ & Flags::I2C) != 0)
+    //    buffer_.setHeader<uint8_t>(0x40); // Co = 0, D/C = 1
+    buffer_.header<uint8_t>() = 0x40; // Co = 0, D/nC = 1
+    buffer_.startWrite(bufferSize(width_, height_));
 }
 
 } // namespace coco

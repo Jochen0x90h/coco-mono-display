@@ -1,6 +1,7 @@
 #pragma once
 
 #include <coco/platform/SSD130x_cout.hpp>
+#include <coco/DummyOutputPort.hpp>
 #include <coco/SSD130x.hpp>
 
 
@@ -12,10 +13,10 @@ constexpr SSD130x::Flags DISPLAY_FLAGS = SSD130x::Flags::SSD1309 | SSD130x::Flag
 
 // drivers for SSD1309Test
 struct Drivers {
-	Loop_native loop;
-	SSD130x_cout displayBuffer{loop, 128, 64};
+    Loop_native loop;
+    SSD130x_cout displayBuffer{loop, DISPLAY_WIDTH, DISPLAY_HEIGHT};
 
-	AwaitableCoroutine resetDisplay() {co_return;}
+    DummyOutputPort resetPin;
 };
 
 Drivers drivers;

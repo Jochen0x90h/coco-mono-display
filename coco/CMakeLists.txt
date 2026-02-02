@@ -1,56 +1,56 @@
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 add_library(${PROJECT_NAME})
 target_sources(${PROJECT_NAME}
-	PUBLIC FILE_SET headers TYPE HEADERS FILES
-		Bitmap.hpp
-		DrawMode.hpp
-		Menu.hpp
-		SSD130x.hpp
-		font/header.hpp
-		font/footer.hpp
-		font/tahoma8pt1bpp.hpp
-	PRIVATE
-		Bitmap.cpp
-		Menu.cpp
-		SSD130x.cpp
-		font/tahoma8pt1bpp.cpp
+    PUBLIC FILE_SET headers TYPE HEADERS FILES
+        Bitmap.hpp
+        DrawMode.hpp
+        Menu.hpp
+        SSD130x.hpp
+        font/header.hpp
+        font/footer.hpp
+        font/tahoma8pt1bpp.hpp
+    PRIVATE
+        Bitmap.cpp
+        Menu.cpp
+        SSD130x.cpp
+        font/tahoma8pt1bpp.cpp
 )
 
 if(${PLATFORM} STREQUAL "native")
-	# native platform (Windows, MacOS, Linux)
-	target_sources(${PROJECT_NAME}
-		PUBLIC FILE_SET platform_headers TYPE HEADERS BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/native FILES
-			native/coco/platform/SSD130x_cout.hpp
-		PRIVATE
-			native/coco/platform/SSD130x_cout.cpp
-	)
+    # native platform (Windows, MacOS, Linux)
+    target_sources(${PROJECT_NAME}
+        PUBLIC FILE_SET platform_headers TYPE HEADERS BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/native FILES
+            native/coco/platform/SSD130x_cout.hpp
+        PRIVATE
+            native/coco/platform/SSD130x_cout.cpp
+    )
 elseif(${PLATFORM} STREQUAL "emu")
-	# emulator platform with graphical user interface (Windows, MacOS, Linux)
-	target_sources(${PROJECT_NAME}
-		PUBLIC FILE_SET platform_headers TYPE HEADERS BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/emu FILES
-			emu/coco/platform/GuiDisplay.hpp
-			emu/coco/platform/SSD130x_emu.hpp
-		PRIVATE
-			emu/coco/platform/GuiDisplay.cpp
-			emu/coco/platform/SSD130x_emu.cpp
-	)
+    # emulator platform with graphical user interface (Windows, MacOS, Linux)
+    target_sources(${PROJECT_NAME}
+        PUBLIC FILE_SET platform_headers TYPE HEADERS BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/emu FILES
+            emu/coco/platform/GuiDisplay.hpp
+            emu/coco/platform/SSD130x_emu.hpp
+        PRIVATE
+            emu/coco/platform/GuiDisplay.cpp
+            emu/coco/platform/SSD130x_emu.cpp
+    )
 endif()
 
 target_link_libraries(${PROJECT_NAME}
-	coco::coco
-	coco-loop::coco-loop
-	coco-device::coco-device
-	coco-font::coco-font
-	coco-io::coco-io
+    coco::coco
+    coco-loop::coco-loop
+    coco-device::coco-device
+    coco-font::coco-font
+    coco-io::coco-io
 )
 
 target_include_directories(${PROJECT_NAME}
-	PUBLIC
-		..
+    PUBLIC
+        ..
 )
 
 # install the library
 install(TARGETS ${PROJECT_NAME}
-	FILE_SET headers DESTINATION include/coco
-	FILE_SET platform_headers DESTINATION include
+    FILE_SET headers DESTINATION include/coco
+    FILE_SET platform_headers DESTINATION include
 )
