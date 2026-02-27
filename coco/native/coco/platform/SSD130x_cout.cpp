@@ -6,7 +6,7 @@
 namespace coco {
 
 SSD130x_cout::SSD130x_cout(Loop_native &loop, int width, int height)
-    : Buffer(new uint8_t[1 + width * ((height + 7) >> 3)], 1, 1, width * ((height + 7) >> 3), State::READY) // header capacity is 1
+    : Buffer(new uint8_t[1 + width * ((height + 7) >> 3)], 1, width * ((height + 7) >> 3), State::READY) // header capacity is 1
     , loop_(loop)
     , callback_(makeCallback<SSD130x_cout, &SSD130x_cout::handle>(this))
     , width_(width), height_(height)
@@ -17,16 +17,12 @@ SSD130x_cout::~SSD130x_cout() {
     delete [] header_;
 }
 
-bool SSD130x_cout::start(Op op) {
-    if (st.state != State::READY) {
-        assert(st.state != State::BUSY);
+bool SSD130x_cout::start() {
+    if (state_ != State::READY || (op_ & Op::WRITE) == 0 || size_ == 0) {
+        assert(state_ != State::BUSY);
+        setSuccess();
         return false;
     }
-
-    // check if WRITE flag is set
-    assert((op & Op::WRITE) != 0);
-
-    op_ = op;
 
     loop_.invoke(callback_);
 
@@ -37,11 +33,12 @@ bool SSD130x_cout::start(Op op) {
 }
 
 bool SSD130x_cout::cancel() {
-    if (st.state != State::BUSY)
+    if (state_ != State::BUSY)
         return false;
 
     callback_.remove();
-    setReady(0);
+    setError(std::errc::operation_canceled);
+    setReady();
 
     return true;
 }

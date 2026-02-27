@@ -16,7 +16,7 @@ public:
     SSD130x_cout(Loop_native &loop, int width, int height);
     ~SSD130x_cout() override;
 
-    bool start(Op op) override;
+    bool start() override;
     bool cancel() override;
 
 protected:
@@ -27,8 +27,6 @@ protected:
 
     int width_;
     int height_;
-
-    Op op_;
 };
 
 } // namespace coco

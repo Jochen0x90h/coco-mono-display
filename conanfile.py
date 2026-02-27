@@ -23,15 +23,15 @@ class Project(ConanFile):
         return False
 
     def requirements(self):
-        self.requires("coco-device/0.4.0", options={"platform": self.options.platform})
-        self.requires("coco-io/0.7.0", options={"platform": self.options.platform})
-        self.requires("coco-font/0.2.0", options={"platform": self.options.platform})
+        self.requires("coco-device/linux", options={"platform": self.options.platform})
+        self.requires("coco-io/linux", options={"platform": self.options.platform})
+        self.requires("coco-font/linux", options={"platform": self.options.platform})
 
     def build_requirements(self):
-        self.tool_requires("coco-toolchain/0.4.0", options={"platform": self.options.platform})
-        self.test_requires("coco-devboards/0.7.0", options={"platform": self.options.platform})
-        self.test_requires("coco-spi/0.6.0", options={"platform": self.options.platform})
-        self.test_requires("coco-i2c/0.3.0", options={"platform": self.options.platform})
+        self.tool_requires("coco-toolchain/linux", options={"platform": self.options.platform})
+        self.test_requires("coco-devboards/linux", options={"platform": self.options.platform})
+        self.test_requires("coco-spi/linux", options={"platform": self.options.platform})
+        self.test_requires("coco-i2c/linux", options={"platform": self.options.platform})
         if not self.cross():
             # platform is based on a "normal" operating system such as Windows, MacOS, Linux
             self.test_requires("gtest/1.17.0")

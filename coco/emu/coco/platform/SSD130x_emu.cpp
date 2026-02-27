@@ -5,7 +5,7 @@
 namespace coco {
 
 SSD130x_emu::SSD130x_emu(Loop_emu &loop, int width, int height)
-    : Buffer(new uint8_t[1 + width * ((height + 7) >> 3)], 1, 1, width * ((height + 7) >> 3), State::READY) // header capacity is 1
+    : Buffer(new uint8_t[1 + width * ((height + 7) >> 3)], 1, width * ((height + 7) >> 3), State::READY) // header capacity is 1
     , width_(width), height_(height)
     , image_(new uint8_t[width * height * 4])
 {
@@ -19,16 +19,12 @@ SSD130x_emu::~SSD130x_emu() {
     delete [] image_;
 }
 
-bool SSD130x_emu::start(Op op) {
-    if (st.state != State::READY) {
-        assert(st.state != State::BUSY);
+bool SSD130x_emu::start() {
+    if (state_ != State::READY || (op_ & Op::WRITE) == 0 || size_ == 0) {
+        assert(state_ != State::BUSY);
+        setSuccess();
         return false;
     }
-
-    // check if WRITE flag is set
-    assert((op & Op::WRITE) != 0);
-
-    op_ = op;
 
     // set state
     setBusy();
@@ -37,16 +33,17 @@ bool SSD130x_emu::start(Op op) {
 }
 
 bool SSD130x_emu::cancel() {
-    if (st.state != State::BUSY)
+    if (state_ != State::BUSY)
         return false;
 
-    setReady(0);
+    setError(std::errc::operation_canceled);
+    setReady();
 
     return true;
 }
 
 void SSD130x_emu::handle(Gui &gui) {
-    if (st.state == State::BUSY) {
+    if (state_ == State::BUSY) {
         auto op = op_;
         bool command = (header_[0] & 0x40) == 0;
         auto data = data_;

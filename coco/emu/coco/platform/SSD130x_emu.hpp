@@ -16,7 +16,7 @@ public:
     SSD130x_emu(Loop_emu &loop, int width, int height);
     ~SSD130x_emu() override;
 
-    bool start(Op op) override;
+    bool start() override;
     bool cancel() override;
 
 protected:
@@ -24,8 +24,6 @@ protected:
 
     int width_;
     int height_;
-
-    Op op_;
 
     bool enabled_;
     uint8_t contrast_ = 255;
