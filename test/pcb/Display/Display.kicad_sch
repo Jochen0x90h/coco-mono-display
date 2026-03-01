@@ -3790,7 +3790,7 @@
 				)
 			)
 		)
-		(property "Footprint" "local:Connector-Flat-24_P0.5mm"
+		(property "Footprint" "local:Connector-Flat-24-0.5mm"
 			(at 53.34 82.55 0)
 			(effects
 				(font

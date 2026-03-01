@@ -36,20 +36,20 @@ endfunction()
 
 # LedControl board
 if(${PLATFORM} STREQUAL "stm32g431xx")
-    add_library(LedControl
-        LedControl/debug.cpp
-        LedControl/SystemInit.cpp
+    add_library(LedControl-g431
+        LedControl-g431/debug.cpp
+        LedControl-g431/SystemInit.cpp
     )
 
     # inherit from nucleo-g431rb
-    target_link_libraries(LedControl
+    target_link_libraries(LedControl-g431
         coco::coco
         coco-loop::coco-loop
     )
 
-    target_link_options(LedControl
+    target_link_options(LedControl-g431
         PUBLIC
-            "-T${CMAKE_CURRENT_SOURCE_DIR}/LedControl/link.ld"
+            "-T${CMAKE_CURRENT_SOURCE_DIR}/LedControl-g431/link.ld"
     )
 endif()
 
@@ -60,7 +60,7 @@ board_test(SSD1306Test coco-devboards::nucleo-g431rb)
 board_test(SSD1309Test coco-devboards::native)
 board_test(SSD1309Test coco-devboards::emu)
 board_test(SSD1309Test coco-devboards::nucleo-g431rb)
-board_test(SSD1309Test LedControl)
+board_test(SSD1309Test LedControl-g431)
 
 board_test(MenuTest coco-devboards::emu)
 
