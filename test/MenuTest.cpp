@@ -90,8 +90,8 @@ Coroutine mainMenu(Loop &loop, OutputPort &out, SSD130x &display, InputDevice &b
 
 
 int main(void) {
-    SSD130x display(drivers.buffer, DISPLAY_WIDTH, DISPLAY_HEIGHT, DISPLAY_FLAGS);
-    mainMenu(drivers.loop, drivers.resetPin, display, drivers.buttons);
+    SSD130x display(drivers.displayBuffer, DISPLAY_WIDTH, DISPLAY_HEIGHT, DISPLAY_FLAGS);
+    mainMenu(drivers.loop, drivers.resetPin, display, drivers.input);
 
     drivers.loop.run();
 }

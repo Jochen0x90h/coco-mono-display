@@ -14,8 +14,9 @@ constexpr SSD130x::Flags DISPLAY_FLAGS = SSD130x::Flags::SSD1309 | SSD130x::Flag
 // drivers for SSD130xTest
 struct Drivers {
     Loop_emu loop;
-    SSD130x_emu displayBuffer{loop, DISPLAY_WIDTH, DISPLAY_HEIGHT};
 
+    // display
+    SSD130x_emu displayBuffer{loop, DISPLAY_WIDTH, DISPLAY_HEIGHT};
     DummyOutputPort resetPin;
 };
 

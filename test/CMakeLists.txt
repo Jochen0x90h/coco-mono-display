@@ -63,6 +63,7 @@ board_test(SSD1309Test coco-devboards::nucleo-g431rb)
 board_test(SSD1309Test LedControl-g431)
 
 board_test(MenuTest coco-devboards::emu)
+board_test(MenuTest LedControl-g431)
 
 
 # unit tests for "normal" operating systems

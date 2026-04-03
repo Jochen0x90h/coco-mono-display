@@ -16,9 +16,9 @@ constexpr SSD130x::Flags DISPLAY_FLAGS = SSD130x::Flags::I2C;//NONE;
 // drivers for SSD130xTest
 struct Drivers {
     Loop_emu loop;
-    SSD130x_emu buffer{loop, DISPLAY_WIDTH, DISPLAY_HEIGHT};
+    SSD130x_emu displayBuffer{loop, DISPLAY_WIDTH, DISPLAY_HEIGHT};
     Newline_emu newline1{loop}; // start a new line in the emulateor gui
-    RotaryKnob_emu buttons{loop, true, 100};
+    RotaryKnob_emu input{loop, true, 100};
 
     DummyOutputPort resetPin;
 };
