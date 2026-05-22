@@ -8,7 +8,7 @@ namespace coco {
 SSD130x_cout::SSD130x_cout(Loop_native &loop, int width, int height)
     : Buffer(new uint8_t[1 + width * ((height + 7) >> 3)], 1, width * ((height + 7) >> 3), State::READY) // header capacity is 1
     , loop_(loop)
-    , callback_(makeCallback<SSD130x_cout, &SSD130x_cout::handle>(this))
+    //, callback_(makeCallback<SSD130x_cout, &SSD130x_cout::onTimeout>(this))
     , width_(width), height_(height)
 {
 }
@@ -24,7 +24,8 @@ bool SSD130x_cout::start() {
         return false;
     }
 
-    loop_.invoke(callback_);
+    //loop_.invoke(callback_);
+    loop_.invoke(*this);
 
     // set state
     setBusy();
@@ -36,14 +37,15 @@ bool SSD130x_cout::cancel() {
     if (state_ != State::BUSY)
         return false;
 
-    callback_.remove();
+    //callback_.remove();
+    Loop_native::TimeoutHandler::remove();
     setError(std::errc::operation_canceled);
     setReady();
 
     return true;
 }
 
-void SSD130x_cout::handle() {
+void SSD130x_cout::onTimeout() {
     auto op = op_;
     bool command = (header_[0] & 0x40) == 0;
     auto data = data_;

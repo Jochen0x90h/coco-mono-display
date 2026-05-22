@@ -7,7 +7,7 @@ namespace coco {
 
 /// @brief Implementation of an SSD1306/SSD1309 emulator that prints the dipslay contents to std::cout
 ///
-class SSD130x_cout : public Buffer {
+class SSD130x_cout : public Buffer, public Loop_native::TimeoutHandler {
 public:
     /// @brief Constructor
     /// @param loop event loop
@@ -20,10 +20,10 @@ public:
     bool cancel() override;
 
 protected:
-    void handle();
+    void onTimeout() override;
 
     Loop_native &loop_;
-    TimedTask<Callback> callback_;
+    //TimedTask<Callback<>> callback_;
 
     int width_;
     int height_;

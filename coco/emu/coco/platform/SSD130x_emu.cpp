@@ -42,7 +42,7 @@ bool SSD130x_emu::cancel() {
     return true;
 }
 
-void SSD130x_emu::handle(Gui &gui) {
+void SSD130x_emu::onGui(Gui &gui) {
     if (state_ == State::BUSY) {
         auto op = op_;
         bool command = (header_[0] & 0x40) == 0;

@@ -20,7 +20,7 @@ public:
     bool cancel() override;
 
 protected:
-    void handle(Gui &gui) override;
+    void onGui(Gui &gui) override;
 
     int width_;
     int height_;

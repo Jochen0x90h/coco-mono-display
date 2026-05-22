@@ -28,7 +28,6 @@ class Project(ConanFile):
         self.requires("coco-font/linux", options={"platform": self.options.platform})
 
     def build_requirements(self):
-        #self.tool_requires("coco-toolchain/linux", options={"platform": self.options.platform})
         self.test_requires("coco-devboards/linux", options={"platform": self.options.platform})
         self.test_requires("coco-spi/linux", options={"platform": self.options.platform})
         self.test_requires("coco-i2c/linux", options={"platform": self.options.platform})
