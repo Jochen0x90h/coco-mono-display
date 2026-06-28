@@ -13,8 +13,7 @@ class Menu {
 public:
     using Stream = BitmapStream;
 
-    Menu(SSD130x &display, const LinearFont &font) : display_(display), font_(font) {
-    }
+    Menu(SSD130x &display, const LinearFont &font) : display_(display), font_(font) {}
 
     /// @brief Begin a menu
     /// @param buttons buttons that control the menu, either d-pad or rotary button
@@ -23,7 +22,7 @@ public:
 
     /// @brief Show the menu on the display. Should be awaited before begin() gets called again
     /// @return use co_await and select on the return value to wait for redraw and user input, e.g. buttons
-    [[nodiscard]] Awaitable<Buffer::Events> show();
+    [[nodiscard]] Awaitable<CoroutineTask<Buffer::Events>> show();
 
     /// @brief Wait for user input
     ///

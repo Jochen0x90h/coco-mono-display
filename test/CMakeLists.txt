@@ -41,7 +41,6 @@ if(${PLATFORM} STREQUAL "stm32g431xx")
         LedControl-g431/SystemInit.cpp
     )
 
-    # inherit from nucleo-g431rb
     target_link_libraries(LedControl-g431
         coco::coco
         coco-loop::coco-loop

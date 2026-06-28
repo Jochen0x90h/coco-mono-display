@@ -94,7 +94,7 @@ public:
 
     /// @brief Show the contents of the bitmap on the display
     /// @return use co_await on return value to await end of operation
-    [[nodiscard]] Awaitable<Buffer::Events> show();
+    [[nodiscard]] Awaitable<CoroutineTask<Buffer::Events>> show();
 
     /// @brief Start writing the bitmap to the display. The application can co_await display.buffer().untilReady() to wait
     /// for end of write operation

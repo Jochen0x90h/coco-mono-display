@@ -58,7 +58,7 @@ bool Menu::begin(InputDevice &buttons) {
     return false;
 }
 
-Awaitable<Buffer::Events> Menu::show() {
+Awaitable<CoroutineTask<Buffer::Events>> Menu::show() {
     section_ = Section::END;
 
     // need redraw if an entry was selected

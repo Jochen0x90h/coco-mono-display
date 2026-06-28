@@ -165,7 +165,7 @@ AwaitableCoroutine SSD130x::setContrast(uint8_t contrast) {
     co_await buffer_.write(2);//, Buffer::Op::COMMAND);
 }
 
-Awaitable<Buffer::Events> SSD130x::show() {
+Awaitable<CoroutineTask<Buffer::Events>> SSD130x::show() {
     //if ((flags_ & Flags::I2C) != 0)
     //    buffer_.setHeader<uint8_t>(0x40); // Co = 0, D/C = 1
     buffer_.header<uint8_t>() = 0x40; // Co = 0, D/nC = 1

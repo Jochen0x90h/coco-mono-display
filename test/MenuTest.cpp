@@ -46,9 +46,9 @@ AwaitableCoroutine menu2(SSD130x &display, InputDevice &buttons) {
     }
 }
 
-Awaitable<> noWait() {
-    return {};
-}
+//Awaitable<> noWait() {
+//    return {};
+//}
 
 Coroutine mainMenu(Loop &loop, OutputPort &out, SSD130x &display, InputDevice &buttons) {
 	// reset display
