@@ -24,15 +24,15 @@ struct Drivers {
     // display
     using SpiMaster = SpiMaster_SPI_DMA;
     SpiMaster displaySpi{loop,
+        spi::SPI1_INFO,
         gpio::PA5 | gpio::AF5 | gpio::Config::SPEED_MEDIUM, // SPI1 DISP_SCK (don't forget to lookup the alternate function number in the data sheet!)
         gpio::PA7 | gpio::AF5 | gpio::Config::SPEED_MEDIUM, // SPI1 DISP_MOSI
         gpio::NONE, // SPI1 MISO, not used
-        spi::SPI1_INFO,
         dma::DMA1_CH1_CH2_INFO};
     SpiDisplayChannel_SPI_DMA displayChannel{displaySpi,
         gpio::PA4 | gpio::Config::SPEED_MEDIUM | gpio::Config::INVERT, // DISP_nCS
-        gpio::PA0 | gpio::Config::SPEED_MEDIUM, false, 0x40, // DISP_D/nC
-        spi::Format::CLOCK_DIV_128 | spi::Format::PHA1_POL1 | spi::Format::DATA_8};
+        spi::Format::CLOCK_DIV_128 | spi::Format::PHA1_POL1 | spi::Format::DATA_8,
+        gpio::PA0 | gpio::Config::SPEED_MEDIUM, false, 0x40}; // DISP_D/nC
     SpiMaster::Buffer<1, DISPLAY_WIDTH * DISPLAY_HEIGHT / 8> displayBuffer{displayChannel};
 
     // display reset pin
