@@ -5,7 +5,7 @@ Monochrome (1 bit) display module for CoCo
 ![Display](Display.jpg)
 
 ## Import
-Add coco-monodisplay/\<version> to your conanfile where version corresponds to the git tags
+Add coco-monodisplay/\<version> to your conanfile where version corresponds to a git tag.
 
 ## Features
 * Support for monochrome displays e.g. 128x64
